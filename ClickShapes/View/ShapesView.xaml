@@ -1,0 +1,179 @@
+﻿<UserControl x:Class="ClickShapes.View.ShapesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClickShapes.View"
+             xmlns:behaviors="http://schemas.microsoft.com/xaml/behaviors"
+             mc:Ignorable="d"
+             DataContext="{StaticResource ShapesVM}"
+             d:DesignWidth="960" d:DesignHeight="500">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="4*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Header row -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" Background="Salmon">
+            <Label Content="ClickShapes"/>
+        </Grid>
+
+        <!-- Side Bar -->
+        <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="30"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Polygons List -->
+            <ListBox Grid.Row="0" Grid.ColumnSpan="3" ItemsSource="{Binding Polygons}" SelectedItem="{Binding PolygonOfInterest}"/>
+
+            <!-- Add, Delete, JSON buttons -->
+            <Button Content="New" Grid.Row="1" Grid.Column="0" Command="{Binding NewPolygonCommand}"/>
+            <Button Content="Delete" Grid.Row="1" Grid.Column="1" Command="{Binding DeletePolygonCommand}"/>
+            <Button Content="JSON" Grid.Row="1" Grid.Column="2" Command="{Binding ExportToJsonCommand}"/>
+            <Button Content="Load Image" Grid.Row="2" Grid.ColumnSpan="3" Command="{Binding LoadImageCommand}"/>
+        </Grid>
+
+        <!-- Canvas Area -->
+        <Viewbox Grid.Row="1" Grid.Column="1" Stretch="UniformToFill">
+            <Canvas x:Name="MainCanvas" Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}">
+
+                <!-- Drawing of saved (closed) polygons -->
+                <ItemsControl ItemsSource="{Binding Polygons}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <!-- Closed Polygon (Visible only when polygon is closed) -->
+                            <Polygon Points="{Binding VerticesString}" Stroke="Lime" StrokeThickness="1" Fill="Pink" Opacity="0.65">
+                                <Polygon.Style>
+                                    <Style TargetType="Polygon">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsClosed}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Polygon.Style>
+
+                                <!-- Handle Rectangle Inputs -->
+                                <Polygon.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=DataContext.PolygonClickedCommand}" CommandParameter="{Binding}"/>
+                                </Polygon.InputBindings>
+                            </Polygon>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+
+                <!-- Open Polygon - Polyline (Visible only when polygon is open) -->
+                <Polyline Points="{Binding PolygonOfInterest.VerticesString}" Stroke="Red" StrokeThickness="1">
+                    <Polyline.Style>
+                        <Style TargetType="Polyline">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding PolygonOfInterest.IsClosed}" Value="False">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Polyline.Style>
+                </Polyline>
+
+                <!-- Draw Rectangles of Vertices -->
+                <ItemsControl ItemsSource="{Binding PolygonOfInterest.Vertices}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Rectangle Width="10" Height="10">
+                                <!-- Offset so that rectangle is positioned in the middle -->
+                                <Rectangle.RenderTransform>
+                                    <TranslateTransform X="-5" Y="-5" />
+                                </Rectangle.RenderTransform>
+
+                                <!-- Rectangle Style -->
+                                <Rectangle.Style>
+                                    <Style TargetType="{x:Type Rectangle}">
+                                        <Setter Property="Fill" Value="#343231"/>
+                                        <Setter Property="IsHitTestVisible" Value="True"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsFloating}" Value="True">
+                                                <Setter Property="Opacity" Value="0"/>
+                                                <Setter Property="IsHitTestVisible" Value="False"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="Fill" Value="Orange"/>
+                                                <Setter Property="IsHitTestVisible" Value="False"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Rectangle.Style>
+
+                                <!-- Handle Rectangle Inputs -->
+                                <Rectangle.InputBindings>
+                                    <MouseBinding Gesture="LeftClick" Command="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=DataContext.RectangleClickedCommand}" CommandParameter="{Binding}"/>
+                                </Rectangle.InputBindings>
+                            </Rectangle>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                    <!-- Location of rectangle -->
+                    <ItemsControl.ItemContainerStyle>
+                        <Style>
+                            <Setter Property="Canvas.Top" Value="{Binding Point.Y}"/>
+                            <Setter Property="Canvas.Left" Value="{Binding Point.X}"/>
+                        </Style>
+                    </ItemsControl.ItemContainerStyle>
+                </ItemsControl>
+
+                <!-- Handle Canvas Inputs -->
+                <Canvas.InputBindings>
+                    <MouseBinding Gesture="LeftClick" Command="{Binding CanvasClickedCommand}" CommandParameter="{Binding ElementName=MainCanvas}"/>
+                </Canvas.InputBindings>
+                <behaviors:Interaction.Triggers>
+                    <behaviors:EventTrigger EventName="MouseMove">
+                        <behaviors:InvokeCommandAction Command="{Binding CanvasMouseMoveCommand}" CommandParameter="{Binding ElementName=MainCanvas}"/>
+                    </behaviors:EventTrigger>
+                </behaviors:Interaction.Triggers>
+
+                <Canvas.Background>
+                    <ImageBrush ImageSource="{Binding Path=BackgroundImage}"/>
+                </Canvas.Background>
+            </Canvas>
+            <Viewbox.Style>
+                <Style TargetType="Viewbox">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding PolygonOfInterest.IsClosed}" Value="False">
+                            <Setter Property="Cursor" Value="Cross"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Viewbox.Style>
+        </Viewbox>
+    </Grid>
+
+
+
+</UserControl>

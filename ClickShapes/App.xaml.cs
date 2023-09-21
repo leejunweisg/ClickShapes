@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using Serilog;
+using System.Windows;
 
 namespace ClickShapes
 {
@@ -7,5 +8,14 @@ namespace ClickShapes
     /// </summary>
     public partial class App : Application
     {
+        public App()
+        {
+            // Initialise logger
+            Log.Logger = new LoggerConfiguration()
+                        .WriteTo.Debug()
+                        .MinimumLevel.Debug()
+                        .CreateLogger();
+        }
+
     }
 }

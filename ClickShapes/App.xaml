@@ -6,7 +6,8 @@
              StartupUri="View/MainWindow.xaml">
     <Application.Resources>
         <ResourceDictionary>
-            <vm:MainViewModel x:Key="mainViewModel"/>
+            <vm:MainViewModel x:Key="MainViewModel"/>
+            <vm:ShapesViewModel x:Key="ShapesVM"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -8,126 +8,15 @@
         WindowStartupLocation="CenterScreen"
         mc:Ignorable="d"
         Title="ClickShapes" Width="800" Height="500"
-        DataContext="{StaticResource mainViewModel}">
+        DataContext="{StaticResource ShapesVM}">
+    
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Temporary Debug display -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="DimGray">
-            <Label Content="Debug info:" FontWeight="Bold"/>
-
-            <Label Content="IsPolygonClosed:" />
-            <Label Content="{Binding IsPolygonClosed}"/>
-
-            <Label Content="Vertices Count:" />
-            <Label Content="{Binding Vertices.Count}"/>
-
-            <Button Content="Reset" Command="{Binding ResetCommand}"/>
-        </StackPanel>
-
-        <Viewbox Grid.Row="1" Stretch="Fill">
-            <Canvas Background="Gray" x:Name="MainCanvas" Width="800" Height="500">
-
-                <!-- Closed Polygon (Visible only when polygon is closed) -->
-                <Polygon Points="{Binding PointsString}" Stroke="Lime" StrokeThickness="1" Fill="Pink">
-                    <Polygon.Style>
-                        <Style TargetType="Polygon">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsPolygonClosed}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Polygon.Style>
-                </Polygon>
-
-                <!-- Opened Polygon - Polyline (Visible only when polygon is open) -->
-                <Polyline Points="{Binding PointsString}" Stroke="Red" StrokeThickness="1">
-                    <Polyline.Style>
-                        <Style TargetType="Polyline">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsPolygonClosed}" Value="False">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Polyline.Style>
-                </Polyline>
-
-                <!-- Draw Rectangles of Vertices -->
-                <ItemsControl ItemsSource="{Binding Vertices}">
-
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Rectangle Width="10" Height="10">
-                                <!-- Offset so that rectangle is positioned in the middle -->
-                                <Rectangle.RenderTransform>
-                                    <TranslateTransform X="-5" Y="-5" />
-                                </Rectangle.RenderTransform>
-
-                                <!-- Rectangle Style -->
-                                <Rectangle.Style>
-                                    <Style TargetType="{x:Type Rectangle}">
-                                        <Setter Property="Fill" Value="Black"/>
-                                        <Setter Property="IsHitTestVisible" Value="True"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsFloating}" Value="True">
-                                                <Setter Property="Fill" Value="Red"/>
-                                                <Setter Property="IsHitTestVisible" Value="False"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                                <Setter Property="Fill" Value="Orange"/>
-                                                <Setter Property="IsHitTestVisible" Value="False"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Rectangle.Style>
-
-                                <!-- Handle Rectangle Inputs -->
-                                <Rectangle.InputBindings>
-                                    <MouseBinding Gesture="LeftClick" Command="{Binding RelativeSource={RelativeSource AncestorType=Canvas}, Path=DataContext.RectangleClickedCommand}" CommandParameter="{Binding}"/>
-                                </Rectangle.InputBindings>
-                            </Rectangle>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-
-                    <!-- Location of rectangle -->
-                    <ItemsControl.ItemContainerStyle>
-                        <Style>
-                            <Setter Property="Canvas.Top" Value="{Binding Point.Y}"/>
-                            <Setter Property="Canvas.Left" Value="{Binding Point.X}"/>
-                        </Style>
-                    </ItemsControl.ItemContainerStyle>
-                </ItemsControl>
-
-                <!-- Handle Canvas Inputs -->
-                <Canvas.InputBindings>
-                    <MouseBinding Gesture="LeftClick" Command="{Binding CanvasClickedCommand}" CommandParameter="{Binding ElementName=MainCanvas}"/>
-                </Canvas.InputBindings>
-                <behaviors:Interaction.Triggers>
-                    <behaviors:EventTrigger EventName="MouseMove">
-                        <behaviors:InvokeCommandAction Command="{Binding CanvasMouseMoveCommand}" CommandParameter="{Binding ElementName=MainCanvas}"/>
-                    </behaviors:EventTrigger>
-                </behaviors:Interaction.Triggers>
-            </Canvas>
-        </Viewbox>
-
+        <local:ShapesView Focusable="True" DataContext="{StaticResource ShapesVM}"/>
     </Grid>
 
     <!-- Handle Backspace keypresses -->
     <Window.InputBindings>
-        <KeyBinding Key="Backspace" Command="{Binding BackSpaceCommand}"/>
+        <KeyBinding Key="Backspace" Command="{Binding BackspaceCommand}"/>
         <KeyBinding Key="Esc" Command="{Binding EscapeCommand}"/>
     </Window.InputBindings>
 </Window>
